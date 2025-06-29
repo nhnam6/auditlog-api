@@ -4,15 +4,15 @@ A FastAPI-based authentication service for multi-tenant applications with JWT to
 
 ## Features
 
-- 🔐 JWT-based authentication
-- 🏢 Multi-tenant support
-- 👥 Role-based access control (Admin/User)
-- 🔒 Secure password hashing with bcrypt
-- 📄 Pagination support
-- 🗄️ PostgreSQL database with SQLAlchemy ORM
-- 📝 Comprehensive API documentation
-- 🧪 Unit tests with pytest
-- 📈 Code coverage reporting
+- JWT-based authentication
+- Multi-tenant support
+- Role-based access control (Admin/User)
+- Secure password hashing with bcrypt
+- Pagination support
+- PostgreSQL database with SQLAlchemy ORM
+- Comprehensive API documentation
+- Unit tests with pytest
+- Code coverage reporting
 
 ## Tech Stack
 
@@ -81,25 +81,32 @@ A FastAPI-based authentication service for multi-tenant applications with JWT to
 
 ```bash
 # Start the development server
-poetry run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+poetry run uvicorn main:app --reload --host 0.0.0.0 --port 8001
 ```
 
 ### Production
 
 ```bash
 # Start the production server
-poetry run uvicorn main:app --host 0.0.0.0 --port 8000
+poetry run uvicorn main:app --host 0.0.0.0 --port 8001
+```
+
+### Using the API Runner
+
+```bash
+# Development mode with auto-reload
+poetry run python api_run.py
 ```
 
 ## API Documentation
 
 Once the server is running, you can access:
 
-- **Interactive API docs**: http://localhost:8000/docs
-- **ReDoc documentation**: http://localhost:8000/redoc
-- **OpenAPI schema**: http://localhost:8000/openapi.json
+- **Interactive API docs**: http://localhost:8001/docs
+- **ReDoc documentation**: http://localhost:8001/redoc
+- **OpenAPI schema**: http://localhost:8001/openapi.json
 
-## API Endpoints
+## 🔌 API Endpoints
 
 ### Authentication
 
@@ -438,7 +445,7 @@ poetry run isort .
 poetry run flake8
 ```
 
-## Database Migrations
+## 🗃️ Database Migrations
 
 ### Create a new migration
 
@@ -458,7 +465,7 @@ poetry run alembic upgrade head
 poetry run alembic downgrade -1
 ```
 
-## Environment Variables
+## ⚙️ Environment Variables
 
 | Variable                      | Description                  | Default | Required |
 | ----------------------------- | ---------------------------- | ------- | -------- |
@@ -478,7 +485,7 @@ poetry run alembic downgrade -1
 - **SQL Injection Protection**: SQLAlchemy ORM
 - **CORS Protection**: Configurable CORS middleware
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 auth_service/
@@ -510,7 +517,7 @@ auth_service/
 1. **Create a tenant with admin user**
 
    ```bash
-   curl -X POST "http://localhost:8000/api/v1/tenants" \
+   curl -X POST "http://localhost:8001/api/v1/tenants" \
      -H "Authorization: Bearer <admin-token>" \
      -H "Content-Type: application/json" \
      -d '{
@@ -523,7 +530,7 @@ auth_service/
 2. **Login as admin**
 
    ```bash
-   curl -X POST "http://localhost:8000/api/v1/login" \
+   curl -X POST "http://localhost:8001/api/v1/login" \
      -H "Content-Type: application/json" \
      -d '{
        "email": "admin@mycompany.com",
@@ -533,7 +540,7 @@ auth_service/
 
 3. **Use the token for authenticated requests**
    ```bash
-   curl -X GET "http://localhost:8000/api/v1/tenants" \
+   curl -X GET "http://localhost:8001/api/v1/tenants" \
      -H "Authorization: Bearer <your-token>"
    ```
 
@@ -586,7 +593,7 @@ The API returns appropriate HTTP status codes:
    git commit -m "feat: add your feature"
    ```
 
-## Troubleshooting
+## 🐛 Troubleshooting
 
 ### Common Issues
 

@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   # Auth Service
   auth_service:
@@ -5,7 +7,24 @@ services:
       context: ./auth_service
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "${AUTH_SERVICE_PORT:-8001}:8001"
+    environment:
+      - DATABASE_URL=${AUTH_SERVICE_DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      - DEBUG=${DEBUG:-false}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   # Log Service
   log_service:
@@ -13,24 +32,140 @@ services:
       context: ./log_service
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "${LOG_SERVICE_PORT:-8000}:8000"
+    environment:
+      - DATABASE_URL=${LOG_SERVICE_DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - OPENSEARCH_HOST=${OPENSEARCH_HOST}
+      - OPENSEARCH_PORT=${OPENSEARCH_PORT:-9200}
+      - OPENSEARCH_USER=${OPENSEARCH_USER:-admin}
+      - OPENSEARCH_PASS=${OPENSEARCH_PASS:-admin}
+      - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - SQS_ENDPOINT=${SQS_ENDPOINT}
+      - SQS_LOG_QUEUE_URL=${SQS_LOG_QUEUE_URL}
+      - SQS_EXPORT_QUEUE_URL=${SQS_EXPORT_QUEUE_URL}
+      - EXPORT_S3_BUCKET=${EXPORT_S3_BUCKET:-logs-export}
+      - DEBUG=${DEBUG:-false}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - TENANT_ID=${TENANT_ID:-1}
     depends_on:
-      - db
-      - opensearch
-      - localstack
+      db:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # Log Consumer Service
+  log_consumer:
+    build:
+      context: ./log_service
+      dockerfile: Dockerfile
+    command: python consumer_log.py
+    environment:
+      - DATABASE_URL=${LOG_SERVICE_DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - OPENSEARCH_HOST=${OPENSEARCH_HOST}
+      - OPENSEARCH_PORT=${OPENSEARCH_PORT:-9200}
+      - OPENSEARCH_USER=${OPENSEARCH_USER:-admin}
+      - OPENSEARCH_PASS=${OPENSEARCH_PASS:-admin}
+      - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - SQS_ENDPOINT=${SQS_ENDPOINT}
+      - SQS_LOG_QUEUE_URL=${SQS_LOG_QUEUE_URL}
+      - SQS_EXPORT_QUEUE_URL=${SQS_EXPORT_QUEUE_URL}
+      - EXPORT_S3_BUCKET=${EXPORT_S3_BUCKET:-logs-export}
+      - DEBUG=${DEBUG:-false}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - TENANT_ID=${TENANT_ID:-1}
+    depends_on:
+      db:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Export Consumer Service
+  export_consumer:
+    build:
+      context: ./log_service
+      dockerfile: Dockerfile
+    command: python consumer_export.py
+    environment:
+      - DATABASE_URL=${LOG_SERVICE_DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - OPENSEARCH_HOST=${OPENSEARCH_HOST}
+      - OPENSEARCH_PORT=${OPENSEARCH_PORT:-9200}
+      - OPENSEARCH_USER=${OPENSEARCH_USER:-admin}
+      - OPENSEARCH_PASS=${OPENSEARCH_PASS:-admin}
+      - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - SQS_ENDPOINT=${SQS_ENDPOINT}
+      - SQS_LOG_QUEUE_URL=${SQS_LOG_QUEUE_URL}
+      - SQS_EXPORT_QUEUE_URL=${SQS_EXPORT_QUEUE_URL}
+      - EXPORT_S3_BUCKET=${EXPORT_S3_BUCKET:-logs-export}
+      - DEBUG=${DEBUG:-false}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - TENANT_ID=${TENANT_ID:-1}
+
+    depends_on:
+      db:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # Database
   db:
     image: postgres:14
-    restart: always
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin123
-      POSTGRES_DB: master_db
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin123}
+      POSTGRES_DB: ${POSTGRES_DB:-master_db}
+      POSTGRES_MULTIPLE_DATABASES: ${POSTGRES_MULTIPLE_DATABASES:-auth_service,log_service}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./scripts/init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-master_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   # OpenSearch
   opensearch:
@@ -40,47 +175,59 @@ services:
       discovery.type: single-node
       plugins.security.disabled: "true"
       OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+      cluster.name: ${OPENSEARCH_CLUSTER_NAME:-auditlog-cluster}
+      node.name: ${OPENSEARCH_NODE_NAME:-auditlog-node}
     ports:
-      - "9200:9200"
+      - "${OPENSEARCH_PORT:-9200}:9200"
     volumes:
       - opensearch:/usr/share/opensearch/data
     ulimits:
       nofile:
         soft: 65535
         hard: 65535
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
-  # LocalStack
+  # LocalStack (AWS Services Emulator)
   localstack:
     image: localstack/localstack:3.4.0
     restart: unless-stopped
     environment:
-      DEBUG: true
+      DEBUG: ${LOCALSTACK_DEBUG:-true}
       DOCKER_HOST: unix:///var/run/docker.sock
       HOST_TMP_FOLDER: /tmp/localstack
-      SERVICES: sqs,s3
-      AWS_DEFAULT_REGION: ap-southeast-1
+      SERVICES: ${LOCALSTACK_SERVICES:-sqs,s3}
+      AWS_DEFAULT_REGION: ${AWS_REGION}
       DISABLE_CORS_CHECKS: 1
       DISABLE_CUSTOM_CORS_S3: 1
       HOSTNAME_EXTERNAL: awslocal
+      PERSISTENCE: 1
     volumes:
       - localstack:/var/lib/localstack
       - /var/run/docker.sock:/var/run/docker.sock
       - ./scripts/localstack/localstack.sh:/etc/localstack/init/ready.d/localstack.sh
     ports:
-      - "4566:4566"
+      - "${LOCALSTACK_PORT:-4566}:4566"
     healthcheck:
       test:
         - CMD
         - "curl"
-        - "http://localhost:4566/_localstack/health "
-        - "grep"
-        - '"initScripts": "initialized"'
-      interval: 2s
-      start_period: 20s
-      retries: 10
+        - "-f"
+        - "http://localhost:4566/_localstack/health"
+      interval: 10s
+      start_period: 30s
+      retries: 5
       timeout: 10s
 
 volumes:
   pgdata:
   localstack:
   opensearch:
+
+networks:
+  default:
+    name: ${COMPOSE_PROJECT_NAME:-auditlog-network}
