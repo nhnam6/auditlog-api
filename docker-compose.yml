@@ -1,0 +1,86 @@
+services:
+  # Auth Service
+  auth_service:
+    build:
+      context: ./auth_service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+
+  # Log Service
+  log_service:
+    build:
+      context: ./log_service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - opensearch
+      - localstack
+
+  # Database
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: master_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # OpenSearch
+  opensearch:
+    image: opensearchproject/opensearch:2.11.1
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      plugins.security.disabled: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - opensearch:/usr/share/opensearch/data
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+
+  # LocalStack
+  localstack:
+    image: localstack/localstack:3.4.0
+    restart: unless-stopped
+    environment:
+      DEBUG: true
+      DOCKER_HOST: unix:///var/run/docker.sock
+      HOST_TMP_FOLDER: /tmp/localstack
+      SERVICES: sqs,s3
+      AWS_DEFAULT_REGION: ap-southeast-1
+      DISABLE_CORS_CHECKS: 1
+      DISABLE_CUSTOM_CORS_S3: 1
+      HOSTNAME_EXTERNAL: awslocal
+    volumes:
+      - localstack:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./scripts/localstack/localstack.sh:/etc/localstack/init/ready.d/localstack.sh
+    ports:
+      - "4566:4566"
+    healthcheck:
+      test:
+        - CMD
+        - "curl"
+        - "http://localhost:4566/_localstack/health "
+        - "grep"
+        - '"initScripts": "initialized"'
+      interval: 2s
+      start_period: 20s
+      retries: 10
+      timeout: 10s
+
+volumes:
+  pgdata:
+  localstack:
+  opensearch:
