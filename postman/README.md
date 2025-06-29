@@ -1,15 +1,15 @@
-# AuditLog API - Postman Collection
+# 📮 AuditLog API - Postman Collection
 
 This Postman collection provides a comprehensive set of API requests for testing and interacting with the AuditLog API system, which includes both the Log Service and Auth Service.
 
-## Overview
+## 📋 Overview
 
 The collection is organized into three main sections:
 - **Opensearch** - Direct OpenSearch operations for data management
 - **LogService** - Audit log API endpoints for log management
 - **AuthService** - Authentication and tenant management endpoints
 
-## Setup Instructions
+## 🛠️ Setup Instructions
 
 ### 1. Import the Collection
 
@@ -40,7 +40,7 @@ The environment includes the following variables that you may need to update:
 | `INDEX_PREFIX` | OpenSearch index prefix | `logs` |
 | `INDEX_NAME` | Computed index name | `{{INDEX_PREFIX}}-{{TENANT_ID}}` |
 
-## Authentication
+## 🔐 Authentication
 
 ### Getting Access Tokens
 
@@ -63,7 +63,7 @@ The environment includes the following variables that you may need to update:
    Copy the `access_token` from the response to `TENANT_ACCESS_TOKEN`
    Copy the `tenant_id` from the response to `TENANT_ID`
 
-## API Endpoints
+## 🔌 API Endpoints
 
 ### Opensearch Operations
 
@@ -113,7 +113,7 @@ The environment includes the following variables that you may need to update:
 - **GET** `{{AUTH_SERVICE_API_URL}}/api/v1/tenants` - List all tenants
 - **POST** `{{AUTH_SERVICE_API_URL}}/api/v1/tenants` - Create new tenant
 
-## Usage Examples
+## 💡 Usage Examples
 
 ### 1. Complete Setup Flow
 
@@ -203,7 +203,7 @@ GET {{LOG_SERVICE_API_URL}}/api/v1/logs/?action=CREATE&user_id=user-123&search=d
    GET {{LOG_SERVICE_API_URL}}/api/v1/logs/export/{pipeline_id}
    ```
 
-## Headers
+## 📋 Headers
 
 Most API requests require the following headers:
 
@@ -217,7 +217,7 @@ For admin operations, use:
 Authorization: Bearer {{ADMIN_ACCESS_TOKEN}}
 ```
 
-## Error Handling
+## ⚠️ Error Handling
 
 The API returns standard HTTP status codes:
 
@@ -236,7 +236,7 @@ Error responses include detailed error messages:
 }
 ```
 
-## Testing Workflows
+## 🧪 Testing Workflows
 
 ### 1. Basic CRUD Operations
 1. Create a log entry
@@ -262,7 +262,7 @@ Error responses include detailed error messages:
 4. Search logs in OpenSearch
 5. Verify data consistency
 
-## Troubleshooting
+## 🐛 Troubleshooting
 
 ### Common Issues
 
@@ -293,10 +293,19 @@ Error responses include detailed error messages:
 3. **Verify Environment**: Double-check all environment variables
 4. **Test Connectivity**: Use health check endpoints first
 
-## Support
+## 🆘 Support
 
 For issues or questions:
 1. Check service logs for detailed error messages
 2. Verify environment configuration
 3. Test with health check endpoints
 4. Review API documentation at `/docs` endpoints
+5. Check the service-specific README files
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Note**: This collection is designed for testing and development purposes. For production use, ensure proper security configurations and environment setup.

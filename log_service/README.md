@@ -52,7 +52,7 @@ The service consists of three main components:
    alembic upgrade head
    ```
 
-### Running the Services
+## Running the Services
 
 #### 1. API Service
 
@@ -79,7 +79,7 @@ python consumer_log.py
 python consumer_export.py
 ```
 
-### Docker Deployment
+## Docker Deployment
 
 ```bash
 # Build the image
@@ -599,4 +599,13 @@ Consider integrating with:
 5. Run the test suite
 6. Submit a pull request
 
-## License
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+For support and questions:
+- Create an issue in the repository
+- Contact the development team
+- Check the API documentation at `/docs` endpoints
