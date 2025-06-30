@@ -71,6 +71,28 @@ class TenantStack(Stack):
         db_secret = secretsmanager.Secret.from_secret_name_v2(
             self, "DBSecret", "log/database-url"
         )
+        aws_access_key_secret = secretsmanager.Secret.from_secret_name_v2(
+            self,
+            "AWSAccessKeySecret",
+            "log/aws-access-key-id",
+        )
+        aws_secret_key_secret = secretsmanager.Secret.from_secret_name_v2(
+            self,
+            "AWSSecretKeySecret",
+            "log/aws-secret-access-key",
+        )
+        opensearch_user_secret = secretsmanager.Secret.from_secret_name_v2(
+            self,
+            "OpenSearchUserSecret",
+            "log/opensearch-user",
+        )
+        opensearch_pass_secret = secretsmanager.Secret.from_secret_name_v2(
+            self,
+            "OpenSearchPassSecret",
+            "log/opensearch-pass",
+        )
+        
+        
         ecs_patterns.ApplicationLoadBalancedFargateService(
             self,
             "LogService",
@@ -84,7 +106,9 @@ class TenantStack(Stack):
                     "DEBUG": "False",
                     "TENANT_ID": tenant_id,
                     "JWT_ALGORITHM": "HS256",
-                   
+                    "AWS_ENDPOINT_URL": "",
+                    "AWS_REGION": "ap-southeast-1",
+                    "SQS_ENDPOINT": "",
                     "SQS_LOG_QUEUE_URL": sqs_queue.queue_url,
                     "SQS_EXPORT_QUEUE_URL": export_queue.queue_url,
                     "LOG_QUEUE_NAME": "log-queue",
@@ -92,12 +116,27 @@ class TenantStack(Stack):
                     "EXPORT_S3_BUCKET": s3_bucket.bucket_name,
                     "OPENSEARCH_HOST": "localhost",
                     "OPENSEARCH_PORT": "9200",
-                   
+                    
                 },
                 secrets={
-                    "JWT_SECRET": ecs.Secret.from_secrets_manager(jwt_secret, "secret",),
+                    "JWT_SECRET": ecs.Secret.from_secrets_manager(
+                        jwt_secret,
+                        "secret",
+                    ),
                     "DATABASE_URL": ecs.Secret.from_secrets_manager(
                         db_secret, "secret"
+                    ),
+                    "AWS_ACCESS_KEY_ID": ecs.Secret.from_secrets_manager(
+                        aws_access_key_secret, "secret"
+                    ),
+                    "AWS_SECRET_ACCESS_KEY": ecs.Secret.from_secrets_manager(
+                        aws_secret_key_secret, "secret"
+                    ),
+                    "OPENSEARCH_USER": ecs.Secret.from_secrets_manager(
+                        opensearch_user_secret, "secret"
+                    ),
+                    "OPENSEARCH_PASS": ecs.Secret.from_secrets_manager(
+                        opensearch_pass_secret, "secret"
                     ),
                 },
             ),
@@ -114,11 +153,9 @@ class TenantStack(Stack):
                 "DEBUG": "True",
                 "TENANT_ID": tenant_id,
                 "JWT_ALGORITHM": "HS256",
-                "AWS_ENDPOINT_URL": "http://localhost:4566",
-                "AWS_ACCESS_KEY_ID": "fake",
-                "AWS_SECRET_ACCESS_KEY": "fake",
+                "AWS_ENDPOINT_URL": "",
                 "AWS_REGION": "ap-southeast-1",
-                "SQS_ENDPOINT": "http://localhost:4566",
+                "SQS_ENDPOINT": "",
                 "SQS_LOG_QUEUE_URL": sqs_queue.queue_url,
                 "SQS_EXPORT_QUEUE_URL": export_queue.queue_url,
                 "LOG_QUEUE_NAME": "log-queue",
@@ -126,12 +163,22 @@ class TenantStack(Stack):
                 "EXPORT_S3_BUCKET": "logs-export",
                 "OPENSEARCH_HOST": "localhost",
                 "OPENSEARCH_PORT": "9200",
-                "OPENSEARCH_USER": "admin",
-                "OPENSEARCH_PASS": "admin",
             },
             secrets={
                 "JWT_SECRET": ecs.Secret.from_secrets_manager(jwt_secret),
                 "DATABASE_URL": ecs.Secret.from_secrets_manager(db_secret),
+                "AWS_ACCESS_KEY_ID": ecs.Secret.from_secrets_manager(
+                    aws_access_key_secret, "secret"
+                ),
+                "AWS_SECRET_ACCESS_KEY": ecs.Secret.from_secrets_manager(
+                    aws_secret_key_secret, "secret"
+                ),
+                "OPENSEARCH_USER": ecs.Secret.from_secrets_manager(
+                    opensearch_user_secret, "secret"
+                ),
+                "OPENSEARCH_PASS": ecs.Secret.from_secrets_manager(
+                    opensearch_pass_secret, "secret"
+                ),
             },
             logging=ecs.LogDrivers.aws_logs(stream_prefix="log-consumer"),
         )
@@ -154,11 +201,9 @@ class TenantStack(Stack):
                 "DEBUG": "True",
                 "TENANT_ID": tenant_id,
                 "JWT_ALGORITHM": "HS256",
-                "AWS_ENDPOINT_URL": "http://localhost:4566",
-                "AWS_ACCESS_KEY_ID": "fake",
-                "AWS_SECRET_ACCESS_KEY": "fake",
+                "AWS_ENDPOINT_URL": "",
                 "AWS_REGION": "ap-southeast-1",
-                "SQS_ENDPOINT": "http://localhost:4566",
+                "SQS_ENDPOINT": "",
                 "SQS_LOG_QUEUE_URL": sqs_queue.queue_url,
                 "SQS_EXPORT_QUEUE_URL": export_queue.queue_url,
                 "LOG_QUEUE_NAME": "log-queue",
@@ -166,12 +211,22 @@ class TenantStack(Stack):
                 "EXPORT_S3_BUCKET": "logs-export",
                 "OPENSEARCH_HOST": "localhost",
                 "OPENSEARCH_PORT": "9200",
-                "OPENSEARCH_USER": "admin",
-                "OPENSEARCH_PASS": "admin",
             },
             secrets={
                 "JWT_SECRET": ecs.Secret.from_secrets_manager(jwt_secret),
                 "DATABASE_URL": ecs.Secret.from_secrets_manager(db_secret),
+                "AWS_ACCESS_KEY_ID": ecs.Secret.from_secrets_manager(
+                    aws_access_key_secret, "secret"
+                ),
+                "AWS_SECRET_ACCESS_KEY": ecs.Secret.from_secrets_manager(
+                    aws_secret_key_secret, "secret"
+                ),
+                "OPENSEARCH_USER": ecs.Secret.from_secrets_manager(
+                    opensearch_user_secret, "secret"
+                ),
+                "OPENSEARCH_PASS": ecs.Secret.from_secrets_manager(
+                    opensearch_pass_secret, "secret"
+                ),
             },
             logging=ecs.LogDrivers.aws_logs(stream_prefix="export-consumer"),
         )

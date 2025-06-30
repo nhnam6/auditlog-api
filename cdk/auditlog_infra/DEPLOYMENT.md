@@ -59,6 +59,26 @@ aws --profile test secretsmanager create-secret \
 aws --profile test secretsmanager create-secret \
     --name log/database-url \
     --secret-string "postgresql://username:password@host:port/database"
+
+# Create AWS access key secret
+aws --profile test secretsmanager create-secret \
+    --name log/aws-access-key-id \
+    --secret-string "your-actual-access-key-id"
+
+# Create AWS secret access key secret
+aws --profile test secretsmanager create-secret \
+    --name log/aws-secret-access-key \
+    --secret-string "your-actual-secret-access-key"
+
+# Create OpenSearch username secret
+aws --profile test secretsmanager create-secret \
+    --name log/opensearch-user \
+    --secret-string "your-opensearch-username"
+
+# Create OpenSearch password secret
+aws --profile test secretsmanager create-secret \
+    --name log/opensearch-pass \
+    --secret-string "your-secure-opensearch-password"
 ```
 
 ### Step 2: Deploy Main Stack
