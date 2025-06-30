@@ -288,33 +288,6 @@ log_service/
 └── requirements.txt         # Python dependencies
 ```
 
-## Data Flow
-
-### 1. Log Creation Flow
-
-```
-Client Request → API → Database → SQS Queue → Consumer → OpenSearch
-```
-
-1. Client sends log creation request to API
-2. API validates and stores log in PostgreSQL
-3. API sends message to SQS log queue
-4. Log consumer processes queue and indexes to OpenSearch
-
-### 2. Export Flow
-
-```
-Client Request → API → Export Pipeline → SQS Queue → Consumer → CSV → S3
-```
-
-1. Client requests log export
-2. API creates export pipeline record
-3. API sends message to SQS export queue
-4. Export consumer processes queue
-5. Consumer generates CSV file
-6. Consumer uploads file to S3
-7. Consumer updates pipeline status
-
 ## Testing
 
 ### Test Coverage
@@ -582,30 +555,3 @@ Consider integrating with:
    - Use S3 or compatible object storage
    - Implement lifecycle policies
    - Set up proper access controls
-
-### Scaling
-
-- Horizontal scaling for API services
-- Multiple consumer instances
-- Load balancing
-- Auto-scaling based on queue depth
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Run the test suite
-6. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-For support and questions:
-- Create an issue in the repository
-- Contact the development team
-- Check the API documentation at `/docs` endpoints

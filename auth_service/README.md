@@ -106,7 +106,7 @@ Once the server is running, you can access:
 - **ReDoc documentation**: http://localhost:8001/redoc
 - **OpenAPI schema**: http://localhost:8001/openapi.json
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Authentication
 
@@ -445,7 +445,7 @@ poetry run isort .
 poetry run flake8
 ```
 
-## 🗃️ Database Migrations
+## Database Migrations
 
 ### Create a new migration
 
@@ -465,7 +465,7 @@ poetry run alembic upgrade head
 poetry run alembic downgrade -1
 ```
 
-## ⚙️ Environment Variables
+## Environment Variables
 
 | Variable                      | Description                  | Default | Required |
 | ----------------------------- | ---------------------------- | ------- | -------- |
@@ -485,7 +485,7 @@ poetry run alembic downgrade -1
 - **SQL Injection Protection**: SQLAlchemy ORM
 - **CORS Protection**: Configurable CORS middleware
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 auth_service/
@@ -509,130 +509,3 @@ auth_service/
 ├── pyproject.toml          # Poetry configuration
 └── README.md               # This file
 ```
-
-## Usage Examples
-
-### Creating an Admin User
-
-1. **Create a tenant with admin user**
-
-   ```bash
-   curl -X POST "http://localhost:8001/api/v1/tenants" \
-     -H "Authorization: Bearer <admin-token>" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "name": "my-company",
-       "email": "admin@mycompany.com",
-       "password": "SecurePass123"
-     }'
-   ```
-
-2. **Login as admin**
-
-   ```bash
-   curl -X POST "http://localhost:8001/api/v1/login" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "email": "admin@mycompany.com",
-       "password": "SecurePass123"
-     }'
-   ```
-
-3. **Use the token for authenticated requests**
-   ```bash
-   curl -X GET "http://localhost:8001/api/v1/tenants" \
-     -H "Authorization: Bearer <your-token>"
-   ```
-
-### Error Handling
-
-The API returns appropriate HTTP status codes:
-
-- `200`: Success
-- `201`: Created
-- `400`: Bad Request (validation errors)
-- `401`: Unauthorized (invalid credentials)
-- `403`: Forbidden (insufficient permissions)
-- `404`: Not Found
-- `422`: Validation Error (invalid input)
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## Development Workflow
-
-1. **Set up development environment**
-
-   ```bash
-   poetry install
-   ```
-
-2. **Create feature branch**
-
-   ```bash
-   git checkout -b feature/your-feature
-   ```
-
-3. **Make changes and test**
-
-   ```bash
-   poetry run pytest
-   poetry run black .
-   poetry run isort .
-   poetry run flake8
-   ```
-
-4. **Commit changes**
-   ```bash
-   git add .
-   git commit -m "feat: add your feature"
-   ```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Database connection error**
-
-   - Check `DATABASE_URL` in `.env`
-   - Ensure PostgreSQL is running
-   - Verify database exists
-
-2. **JWT token errors**
-
-   - Check `JWT_SECRET` is set
-   - Ensure token is not expired
-   - Verify token format
-
-3. **Import errors**
-   - Ensure you're in the virtual environment: `poetry shell`
-   - Check Python path: `poetry run python -c "import sys; print(sys.path)"`
-
-### Logs
-
-Check application logs for detailed error information:
-
-```bash
-tail -f logs/auth_service.log
-```
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-For support and questions:
-
-- Create an issue in the repository
-- Contact the development team
-- Check the API documentation at `/docs`
-
----
-
-**Note**: This is a development version. For production deployment, ensure proper security configurations and environment setup.
