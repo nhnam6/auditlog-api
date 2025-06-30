@@ -50,6 +50,11 @@ aws --profile test secretsmanager create-secret \
 
 #### Log Service Secrets
 ```bash
+# Create JWT secret for log
+aws --profile test secretsmanager create-secret \
+    --name log/jwt-secret \
+    --secret-string "your-secure-jwt-secret-here"
+
 # Create database URL secret for log service
 aws --profile test secretsmanager create-secret \
     --name log/database-url \

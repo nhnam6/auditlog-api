@@ -66,10 +66,10 @@ class TenantStack(Stack):
         print(f"Export bucket created: {s3_bucket}")
 
         jwt_secret = secretsmanager.Secret.from_secret_name_v2(
-            self, "JWTSecret", "auth/jwt-secret"
+            self, "JWTSecret", "log/jwt-secret"
         )
         db_secret = secretsmanager.Secret.from_secret_name_v2(
-            self, "DBSecret", "auth/database-url"
+            self, "DBSecret", "log/database-url"
         )
         ecs_patterns.ApplicationLoadBalancedFargateService(
             self,
@@ -84,11 +84,7 @@ class TenantStack(Stack):
                     "DEBUG": "False",
                     "TENANT_ID": tenant_id,
                     "JWT_ALGORITHM": "HS256",
-                    "AWS_ENDPOINT_URL": "http://localhost:4566",
-                    "AWS_ACCESS_KEY_ID": "fake",
-                    "AWS_SECRET_ACCESS_KEY": "fake",
-                    "AWS_REGION": "ap-southeast-1",
-                    "SQS_ENDPOINT": "http://localhost:4566",
+                   
                     "SQS_LOG_QUEUE_URL": sqs_queue.queue_url,
                     "SQS_EXPORT_QUEUE_URL": export_queue.queue_url,
                     "LOG_QUEUE_NAME": "log-queue",
@@ -96,8 +92,7 @@ class TenantStack(Stack):
                     "EXPORT_S3_BUCKET": s3_bucket.bucket_name,
                     "OPENSEARCH_HOST": "localhost",
                     "OPENSEARCH_PORT": "9200",
-                    "OPENSEARCH_USER": "admin",
-                    "OPENSEARCH_PASS": "admin",
+                   
                 },
                 secrets={
                     "JWT_SECRET": ecs.Secret.from_secrets_manager(jwt_secret, "secret",),
