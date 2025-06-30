@@ -82,6 +82,7 @@ The AuditLog API system consists of three main components:
 - **[Auth Service Documentation](auth_service/README.md)** - Authentication, user management, and tenant operations
 - **[Log Service Documentation](log_service/README.md)** - Audit logging, search, and export functionality
 - **[Postman Collection Documentation](postman/README.md)** - API testing and examples
+- **[Infrastructure Deployment Guide](cdk/auditlog_infra/DEPLOYMENT.md)**
 
 ### API Documentation
 Once services are running, access the interactive API documentation:
