@@ -1,17 +1,17 @@
-# 📮 AuditLog API - Postman Collection
+# AuditLog API - Postman Collection
 
 This Postman collection provides a comprehensive set of API requests for testing and interacting with the AuditLog API system, which includes both the Log Service and Auth Service.
 
-## 📋 Overview
+## Overview
 
 The collection is organized into three main sections:
 - **Opensearch** - Direct OpenSearch operations for data management
 - **LogService** - Audit log API endpoints for log management
 - **AuthService** - Authentication and tenant management endpoints
 
-## 🛠️ Setup Instructions
+## Setup Instructions
 
-### 1. Import the Collection
+### Import the Collection
 
 1. Open Postman
 2. Click "Import" button
@@ -40,7 +40,7 @@ The environment includes the following variables that you may need to update:
 | `INDEX_PREFIX` | OpenSearch index prefix | `logs` |
 | `INDEX_NAME` | Computed index name | `{{INDEX_PREFIX}}-{{TENANT_ID}}` |
 
-## 🔐 Authentication
+## Authentication
 
 ### Getting Access Tokens
 
@@ -63,7 +63,7 @@ The environment includes the following variables that you may need to update:
    Copy the `access_token` from the response to `TENANT_ACCESS_TOKEN`
    Copy the `tenant_id` from the response to `TENANT_ID`
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Opensearch Operations
 
@@ -113,7 +113,7 @@ The environment includes the following variables that you may need to update:
 - **GET** `{{AUTH_SERVICE_API_URL}}/api/v1/tenants` - List all tenants
 - **POST** `{{AUTH_SERVICE_API_URL}}/api/v1/tenants` - Create new tenant
 
-## 💡 Usage Examples
+## Usage Examples
 
 ### 1. Complete Setup Flow
 
@@ -131,20 +131,19 @@ The environment includes the following variables that you may need to update:
 **Single Log Entry:**
 ```json
 {
-  "user_id": "user-123",
+  "user_id": "{{$guid}}",
+  "email": "nhnam6@gmail.com",
   "action": "LOGIN",
   "resource_type": "user",
-  "resource_id": "user-456",
+  "resource_id": "user_12345",
   "ip_address": "192.168.1.100",
   "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
   "metadata": {
-    "source": "web",
-    "session_id": "session-789"
+      "login_method": "password"
   },
   "before_state": {},
   "after_state": {
-    "status": "logged_in",
-    "last_login": "2024-01-15T10:30:00Z"
+      "login_time": "2024-01-15T10:30:00Z"
   },
   "severity": "INFO"
 }
@@ -155,17 +154,20 @@ The environment includes the following variables that you may need to update:
 {
   "logs": [
     {
-      "user_id": "user-123",
-      "action": "CREATE",
-      "resource_type": "document",
-      "resource_id": "doc-001",
-      "severity": "INFO"
-    },
-    {
-      "user_id": "user-123",
-      "action": "UPDATE",
-      "resource_type": "document",
-      "resource_id": "doc-001",
+      "user_id": "{{$guid}}",
+      "email": "nhnam6@gmail.com",
+      "action": "LOGIN",
+      "resource_type": "user",
+      "resource_id": "user_12345",
+      "ip_address": "192.168.1.100",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "metadata": {
+          "login_method": "password"
+      },
+      "before_state": {},
+      "after_state": {
+          "login_time": "2024-01-15T10:30:00Z"
+      },
       "severity": "INFO"
     }
   ]
@@ -188,14 +190,7 @@ GET {{LOG_SERVICE_API_URL}}/api/v1/logs/?action=CREATE&user_id=user-123&search=d
 
 1. **Initiate Export:**
    ```json
-   {
-     "start_date": "2024-01-01T00:00:00Z",
-     "end_date": "2024-01-31T23:59:59Z",
-     "filters": {
-       "action": "LOGIN",
-       "severity": "INFO"
-     }
-   }
+   POST {{LOG_SERVICE_API_URL}}/api/v1/logs/export
    ```
 
 2. **Check Export Status:**
@@ -203,7 +198,7 @@ GET {{LOG_SERVICE_API_URL}}/api/v1/logs/?action=CREATE&user_id=user-123&search=d
    GET {{LOG_SERVICE_API_URL}}/api/v1/logs/export/{pipeline_id}
    ```
 
-## 📋 Headers
+## Headers
 
 Most API requests require the following headers:
 
@@ -217,7 +212,7 @@ For admin operations, use:
 Authorization: Bearer {{ADMIN_ACCESS_TOKEN}}
 ```
 
-## ⚠️ Error Handling
+## Error Handling
 
 The API returns standard HTTP status codes:
 
@@ -236,7 +231,7 @@ Error responses include detailed error messages:
 }
 ```
 
-## 🧪 Testing Workflows
+## Testing Workflows
 
 ### 1. Basic CRUD Operations
 1. Create a log entry
@@ -261,51 +256,3 @@ Error responses include detailed error messages:
 3. Index logs via API
 4. Search logs in OpenSearch
 5. Verify data consistency
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Authentication Errors (401)**
-   - Ensure tokens are valid and not expired
-   - Check if using correct token (admin vs tenant)
-   - Verify JWT secret configuration
-
-2. **Connection Errors**
-   - Verify services are running on correct ports
-   - Check environment variable URLs
-   - Ensure network connectivity
-
-3. **Validation Errors (422)**
-   - Check request body format
-   - Verify required fields are present
-   - Ensure data types match schema
-
-4. **OpenSearch Errors**
-   - Verify OpenSearch is running
-   - Check index template exists
-   - Ensure proper permissions
-
-### Debug Tips
-
-1. **Enable Debug Mode**: Set `DEBUG=true` in service environment
-2. **Check Logs**: Monitor service logs for detailed error messages
-3. **Verify Environment**: Double-check all environment variables
-4. **Test Connectivity**: Use health check endpoints first
-
-## 🆘 Support
-
-For issues or questions:
-1. Check service logs for detailed error messages
-2. Verify environment configuration
-3. Test with health check endpoints
-4. Review API documentation at `/docs` endpoints
-5. Check the service-specific README files
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-**Note**: This collection is designed for testing and development purposes. For production use, ensure proper security configurations and environment setup.
