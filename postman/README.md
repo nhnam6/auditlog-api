@@ -48,7 +48,7 @@ The environment includes the following variables that you may need to update:
    ```json
    {
      "email": "admin@example.com",
-     "password": "adminpassword"
+     "password": "admin123"
    }
    ```
    Copy the `access_token` from the response to `ADMIN_ACCESS_TOKEN`

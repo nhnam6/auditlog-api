@@ -89,7 +89,7 @@ Once services are running, access the interactive API documentation:
 - **Auth Service API**: http://localhost:8001/docs
 - **Log Service API**: http://localhost:8000/docs
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -216,7 +216,7 @@ INSERT INTO users (uid, email, hashed_password, role, created_at)
 VALUES (
     '95735f15-c28d-44df-8091-1b047670b02a',
     'admin@example.com',
-    '$2b$12$S9h/mGislH0PemmiNZ7Hau5xHpQE5b3lX5V1VhTtQDCBWs1vsyx5G', --admin123
+    '$2b$12$08tYrXcgGrsdEgZ16l7yWeXvyRudgpL1gdVWmPkiElf7ao1Hxg9TC', --admin123
     'admin',
     now()
 );

@@ -376,43 +376,6 @@ poetry run pytest tests/test_login_api.py::test_login_success -v -s --pdb
 poetry run pytest --tb=short
 ```
 
-### Performance Testing
-
-For performance testing, you can add:
-
-```python
-import time
-
-def test_api_response_time():
-    """Test API response time"""
-    start_time = time.time()
-    response = client.get("/health")
-    end_time = time.time()
-
-    assert response.status_code == 200
-    assert (end_time - start_time) < 0.1  # Response time < 100ms
-```
-
-### Test Data Management
-
-Use factories for test data:
-
-```python
-from factory import Factory, Faker
-from models import User, Tenant
-
-class UserFactory(Factory):
-    class Meta:
-        model = User
-
-    email = Faker('email')
-    hashed_password = hash_password('password123')
-    role = 'user'
-
-# Usage in tests
-user = UserFactory()
-```
-
 ### Coverage Reports
 
 After running tests with coverage, you can:
@@ -421,14 +384,6 @@ After running tests with coverage, you can:
 2. **Check Missing Lines**: Look at `--cov-report=term-missing` output
 3. **Set Coverage Thresholds**: Configure minimum coverage requirements
 
-### Test Maintenance
-
-Regular test maintenance tasks:
-
-1. **Update Tests**: When API changes, update corresponding tests
-2. **Remove Obsolete Tests**: Delete tests for removed functionality
-3. **Refactor Common Code**: Extract shared test utilities
-4. **Monitor Coverage**: Track coverage trends over time
 
 ## Code Quality
 
