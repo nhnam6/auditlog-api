@@ -1,0 +1,11 @@
+{
+  "availability-zones:account=598540919918:region=ap-northeast-1": [
+    "ap-northeast-1a",
+    "ap-northeast-1c",
+    "ap-northeast-1d"
+  ],
+  "hosted-zone:account=598540919918:domainName=0x442.com:region=ap-northeast-1": {
+    "Id": "/hostedzone/Z066877632VPFDO8TN95D",
+    "Name": "0x442.com."
+  }
+}
