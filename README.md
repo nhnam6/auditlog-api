@@ -22,7 +22,6 @@ The AuditLog API system consists of three main components:
 ### 3. **Infrastructure Services**
 - **PostgreSQL** - Primary data storage
 - **OpenSearch** - Full-text search and analytics
-- **Redis** - Caching layer
 - **AWS S3** - File storage for exports
 - **AWS SQS** - Message queuing for background processing
 
@@ -34,7 +33,6 @@ The AuditLog API system consists of three main components:
 - Docker and Docker Compose
 - PostgreSQL
 - OpenSearch/Elasticsearch
-- Redis
 - AWS S3 (or compatible storage)
 - AWS SQS (or compatible message queue)
 

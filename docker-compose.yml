@@ -6,6 +6,7 @@ services:
     build:
       context: ./auth_service
       dockerfile: Dockerfile
+    command: uvicorn main:app --host 0.0.0.0 --port 8001
     ports:
       - "${AUTH_SERVICE_PORT:-8001}:8001"
     environment:
@@ -31,6 +32,7 @@ services:
     build:
       context: ./log_service
       dockerfile: Dockerfile
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
     ports:
       - "${LOG_SERVICE_PORT:-8000}:8000"
     environment:
