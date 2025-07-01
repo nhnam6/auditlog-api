@@ -62,8 +62,8 @@ s3_bucket_stack = S3PublicBucketStack(
 
 log_stack = LogStack(
     app,
-    "AuditLogLogStack-v2",
-    service_id="LogService-v2",
+    "AuditLogLogStack-v3",
+    service_id="LogService-v3",
     tenant_id="4ccf062b-20eb-4f94-85b2-908f12aef6ca",
     image_path="../../log_service",
     vpc=log_db_stack.vpc,
