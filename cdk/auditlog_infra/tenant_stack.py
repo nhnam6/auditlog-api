@@ -1,146 +1,102 @@
 """
-Tenant stack for the auditlog project.
+This stack creates an ECS cluster and a service for the log service.
 """
+
+import os
 
 import aws_cdk as cdk
 from aws_cdk import Stack
-from aws_cdk import aws_certificatemanager as acm
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
-from aws_cdk import aws_opensearchservice as opensearch
-from aws_cdk import aws_rds as rds
-from aws_cdk import aws_route53 as route53
+from aws_cdk import aws_elasticloadbalancingv2 as elbv2
+from aws_cdk import aws_iam as iam
 from aws_cdk import aws_s3 as s3
-from aws_cdk import aws_secretsmanager as secretsmanager
 from aws_cdk import aws_sqs as sqs
 from constructs import Construct
 
 
-class TenantStack(Stack):
+class LogStack(Stack):
     """
-    Tenant stack for the auditlog project.
+    This stack creates an ECS cluster and a service for the auth service.
     """
 
     def __init__(
         self,
         scope: Construct,
         construct_id: str,
+        service_id: str,
         tenant_id: str,
-        tags: dict = None,
+        image_path: str,
+        vpc: ec2.IVpc,
         **kwargs,
     ):
         super().__init__(scope, construct_id, **kwargs)
 
-        if tags:
-            for k, v in tags.items():
-                cdk.Tags.of(self).add(k, v)
+        cluster = ecs.Cluster(self, "Cluster", vpc=vpc)
 
-        vpc = ec2.Vpc(self, "TenantVpc", max_azs=2)
+        aws_access_key_id = os.environ.get("AWS_ACCESS_KEY_ID")
+        aws_secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
+        sqs_log_queue_url = os.environ.get("SQS_LOG_QUEUE_URL")
+        sqs_export_queue_url = os.environ.get("SQS_EXPORT_QUEUE_URL")
+        log_queue_name = os.environ.get("LOG_QUEUE_NAME")
+        export_queue_name = os.environ.get("EXPORT_QUEUE_NAME")
+        export_s3_bucket = os.environ.get("EXPORT_S3_BUCKET")
+        opensearch_host = os.environ.get("OPENSEARCH_HOST")
+        opensearch_port = os.environ.get("OPENSEARCH_PORT")
+        opensearch_user = os.environ.get("OPENSEARCH_USER")
+        opensearch_pass = os.environ.get("OPENSEARCH_PASS")
+        database_url = os.environ.get("DATABASE_URL")
+        jwt_algorithm = os.environ.get("JWT_ALGORITHM")
+        jwt_secret = os.environ.get("JWT_SECRET")
 
-        db = rds.DatabaseInstance(
-            self,
-            "TenantDB",
-            engine=rds.DatabaseInstanceEngine.postgres(
-                version=rds.PostgresEngineVersion.VER_15
-            ),
-            vpc=vpc,
-            instance_type=ec2.InstanceType.of(
-                ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MICRO
-            ),
-            allocated_storage=20,
-            credentials=rds.Credentials.from_generated_secret("tenantuser"),
-            database_name="logs_db",
-            removal_policy=cdk.RemovalPolicy.DESTROY,
-            backup_retention=cdk.Duration.seconds(0),
-        )
-        print(f"Tenant DB created: {db}")
+        environment = {
+            "DEBUG": "True",
+            "DATABASE_URL": database_url,
+            "JWT_ALGORITHM": jwt_algorithm,
+            "JWT_SECRET": jwt_secret,
+            "TENANT_ID": tenant_id,
+            "AWS_ENDPOINT_URL": "",
+            "AWS_ACCESS_KEY_ID": aws_access_key_id,
+            "AWS_SECRET_ACCESS_KEY": aws_secret_access_key,
+            "AWS_REGION": "ap-southeast-1",
+            "SQS_ENDPOINT": "",
+            "SQS_LOG_QUEUE_URL": sqs_log_queue_url,
+            "SQS_EXPORT_QUEUE_URL": sqs_export_queue_url,
+            "LOG_QUEUE_NAME": log_queue_name,
+            "EXPORT_QUEUE_NAME": export_queue_name,
+            "EXPORT_S3_BUCKET": export_s3_bucket,
+            "OPENSEARCH_HOST": opensearch_host,
+            "OPENSEARCH_PORT": opensearch_port,
+            "OPENSEARCH_USER": opensearch_user,
+            "OPENSEARCH_PASS": opensearch_pass,
+        }
 
-        cluster = ecs.Cluster(self, "TenantCluster", vpc=vpc)
-
-        sqs_queue = sqs.Queue(self, "LogQueue")
-        print(f"Log queue created: {sqs_queue}")
-        export_queue = sqs.Queue(self, "ExportQueue")
-        print(f"Export queue created: {export_queue}")
-        s3_bucket = s3.Bucket(self, "ExportBucket")
-        print(f"Export bucket created: {s3_bucket}")
-
-        jwt_secret = secretsmanager.Secret.from_secret_name_v2(
-            self, "JWTSecret", "log/jwt-secret"
-        )
-        db_secret = secretsmanager.Secret.from_secret_name_v2(
-            self, "DBSecret", "log/database-url"
-        )
-        aws_access_key_secret = secretsmanager.Secret.from_secret_name_v2(
+        service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self,
-            "AWSAccessKeySecret",
-            "log/aws-access-key-id",
-        )
-        aws_secret_key_secret = secretsmanager.Secret.from_secret_name_v2(
-            self,
-            "AWSSecretKeySecret",
-            "log/aws-secret-access-key",
-        )
-        opensearch_user_secret = secretsmanager.Secret.from_secret_name_v2(
-            self,
-            "OpenSearchUserSecret",
-            "log/opensearch-user",
-        )
-        opensearch_pass_secret = secretsmanager.Secret.from_secret_name_v2(
-            self,
-            "OpenSearchPassSecret",
-            "log/opensearch-pass",
-        )
-        
-        
-        ecs_patterns.ApplicationLoadBalancedFargateService(
-            self,
-            "LogService",
+            service_id,
             cluster=cluster,
             cpu=256,
             memory_limit_mib=512,
             desired_count=1,
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
-                image=ecs.ContainerImage.from_asset("../../log_service"),
-                environment={
-                    "DEBUG": "False",
-                    "TENANT_ID": tenant_id,
-                    "JWT_ALGORITHM": "HS256",
-                    "AWS_ENDPOINT_URL": "",
-                    "AWS_REGION": "ap-southeast-1",
-                    "SQS_ENDPOINT": "",
-                    "SQS_LOG_QUEUE_URL": sqs_queue.queue_url,
-                    "SQS_EXPORT_QUEUE_URL": export_queue.queue_url,
-                    "LOG_QUEUE_NAME": "log-queue",
-                    "EXPORT_QUEUE_NAME": "export-queue",
-                    "EXPORT_S3_BUCKET": s3_bucket.bucket_name,
-                    "OPENSEARCH_HOST": "localhost",
-                    "OPENSEARCH_PORT": "9200",
-                    
-                },
-                secrets={
-                    "JWT_SECRET": ecs.Secret.from_secrets_manager(
-                        jwt_secret,
-                        "secret",
-                    ),
-                    "DATABASE_URL": ecs.Secret.from_secrets_manager(
-                        db_secret, "secret"
-                    ),
-                    "AWS_ACCESS_KEY_ID": ecs.Secret.from_secrets_manager(
-                        aws_access_key_secret, "secret"
-                    ),
-                    "AWS_SECRET_ACCESS_KEY": ecs.Secret.from_secrets_manager(
-                        aws_secret_key_secret, "secret"
-                    ),
-                    "OPENSEARCH_USER": ecs.Secret.from_secrets_manager(
-                        opensearch_user_secret, "secret"
-                    ),
-                    "OPENSEARCH_PASS": ecs.Secret.from_secrets_manager(
-                        opensearch_pass_secret, "secret"
-                    ),
-                },
+                image=ecs.ContainerImage.from_asset(image_path),
+                container_port=8001,
+                environment=environment,
             ),
             public_load_balancer=True,
+            health_check_grace_period=cdk.Duration.seconds(60),
+            load_balancer_name=f"{service_id}-alb",
+        )
+        service.target_group.configure_health_check(
+            path="/health",
+            port="8001",
+            protocol=elbv2.Protocol.HTTP,
+            healthy_threshold_count=2,
+            unhealthy_threshold_count=3,
+            timeout=cdk.Duration.seconds(10),
+            interval=cdk.Duration.seconds(60),
+            healthy_http_codes="200",
         )
 
         # Create log consumer task definition
@@ -149,46 +105,8 @@ class TenantStack(Stack):
             "LogConsumerContainer",
             image=ecs.ContainerImage.from_asset("../../log_service"),
             command=["python", "consumer_log.py"],
-            environment={
-                "DEBUG": "True",
-                "TENANT_ID": tenant_id,
-                "JWT_ALGORITHM": "HS256",
-                "AWS_ENDPOINT_URL": "",
-                "AWS_REGION": "ap-southeast-1",
-                "SQS_ENDPOINT": "",
-                "SQS_LOG_QUEUE_URL": sqs_queue.queue_url,
-                "SQS_EXPORT_QUEUE_URL": export_queue.queue_url,
-                "LOG_QUEUE_NAME": "log-queue",
-                "EXPORT_QUEUE_NAME": "export-queue",
-                "EXPORT_S3_BUCKET": "logs-export",
-                "OPENSEARCH_HOST": "localhost",
-                "OPENSEARCH_PORT": "9200",
-            },
-            secrets={
-                "JWT_SECRET": ecs.Secret.from_secrets_manager(jwt_secret),
-                "DATABASE_URL": ecs.Secret.from_secrets_manager(db_secret),
-                "AWS_ACCESS_KEY_ID": ecs.Secret.from_secrets_manager(
-                    aws_access_key_secret, "secret"
-                ),
-                "AWS_SECRET_ACCESS_KEY": ecs.Secret.from_secrets_manager(
-                    aws_secret_key_secret, "secret"
-                ),
-                "OPENSEARCH_USER": ecs.Secret.from_secrets_manager(
-                    opensearch_user_secret, "secret"
-                ),
-                "OPENSEARCH_PASS": ecs.Secret.from_secrets_manager(
-                    opensearch_pass_secret, "secret"
-                ),
-            },
+            environment=environment,
             logging=ecs.LogDrivers.aws_logs(stream_prefix="log-consumer"),
-        )
-
-        ecs.FargateService(
-            self,
-            "LogConsumerService",
-            cluster=cluster,
-            task_definition=log_consumer,
-            desired_count=1,
         )
 
         # Create export consumer task definition
@@ -197,44 +115,6 @@ class TenantStack(Stack):
             "ExportConsumerContainer",
             image=ecs.ContainerImage.from_asset("../../log_service"),
             command=["python", "consumer_export.py"],
-            environment={
-                "DEBUG": "True",
-                "TENANT_ID": tenant_id,
-                "JWT_ALGORITHM": "HS256",
-                "AWS_ENDPOINT_URL": "",
-                "AWS_REGION": "ap-southeast-1",
-                "SQS_ENDPOINT": "",
-                "SQS_LOG_QUEUE_URL": sqs_queue.queue_url,
-                "SQS_EXPORT_QUEUE_URL": export_queue.queue_url,
-                "LOG_QUEUE_NAME": "log-queue",
-                "EXPORT_QUEUE_NAME": "export-queue",
-                "EXPORT_S3_BUCKET": "logs-export",
-                "OPENSEARCH_HOST": "localhost",
-                "OPENSEARCH_PORT": "9200",
-            },
-            secrets={
-                "JWT_SECRET": ecs.Secret.from_secrets_manager(jwt_secret),
-                "DATABASE_URL": ecs.Secret.from_secrets_manager(db_secret),
-                "AWS_ACCESS_KEY_ID": ecs.Secret.from_secrets_manager(
-                    aws_access_key_secret, "secret"
-                ),
-                "AWS_SECRET_ACCESS_KEY": ecs.Secret.from_secrets_manager(
-                    aws_secret_key_secret, "secret"
-                ),
-                "OPENSEARCH_USER": ecs.Secret.from_secrets_manager(
-                    opensearch_user_secret, "secret"
-                ),
-                "OPENSEARCH_PASS": ecs.Secret.from_secrets_manager(
-                    opensearch_pass_secret, "secret"
-                ),
-            },
+            environment=environment,
             logging=ecs.LogDrivers.aws_logs(stream_prefix="export-consumer"),
-        )
-
-        ecs.FargateService(
-            self,
-            "ExportConsumerService",
-            cluster=cluster,
-            task_definition=export_consumer,
-            desired_count=1,
         )

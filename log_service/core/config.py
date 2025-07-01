@@ -1,5 +1,6 @@
 """Configuration"""
 
+from typing import Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
@@ -18,7 +19,7 @@ class Settings(BaseSettings):
     JWT_SECRET: str = Field(..., env="JWT_SECRET")
     JWT_ALGORITHM: str = Field("HS256", env="JWT_ALGORITHM")
 
-    AWS_ENDPOINT_URL: str = Field(
+    AWS_ENDPOINT_URL: Optional[str] = Field(
         "http://localhost:4566",
         env="AWS_ENDPOINT_URL",
     )
@@ -26,7 +27,10 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: str = Field("fake", env="AWS_SECRET_ACCESS_KEY")
     AWS_REGION: str = Field("ap-southeast-1", env="AWS_REGION")
 
-    SQS_ENDPOINT: str = Field("http://localhost:4566", env="SQS_ENDPOINT")
+    SQS_ENDPOINT: Optional[str] = Field(
+        "http://localhost:4566",
+        env="SQS_ENDPOINT",
+    )
     SQS_LOG_QUEUE_URL: str = Field(..., env="SQS_LOG_QUEUE_URL")
     SQS_EXPORT_QUEUE_URL: str = Field(..., env="SQS_EXPORT_QUEUE_URL")
     LOG_QUEUE_NAME: str = Field("log-queue", env="LOG_QUEUE_NAME")
