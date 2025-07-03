@@ -78,7 +78,7 @@ class LogStack(Stack):
             desired_count=1,
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
                 image=ecs.ContainerImage.from_asset(image_path),
-                container_port=8001,
+                container_port=8000,
                 environment=environment,
             ),
             public_load_balancer=True,

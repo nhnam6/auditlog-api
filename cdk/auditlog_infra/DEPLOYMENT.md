@@ -361,8 +361,100 @@ arn:aws:cloudformation:ap-northeast-1:598540919918:stack/AuditLogS3BucketStack/d
 ✨  Total time: 64.43s
 ```
 
-- cdk --profile test deploy AuditLogTenantStack
+- cdk --profile test deploy AuditLogLogStack-v6
 
 ```bash
+✨  Synthesis time: 20.79s
 
+AuditLogLogDBStack
+AuditLogLogStack-v6: start: Building AuditLogLogStack-v6 Template
+AuditLogLogStack-v6: success: Built AuditLogLogStack-v6 Template
+AuditLogLogDBStack: deploying... [1/2]
+
+ ✅  AuditLogLogDBStack (no changes)
+
+✨  Deployment time: 9.17s
+
+Outputs:
+AuditLogLogDBStack.ExportsOutputRefMainVpc919A5E7E852FB707 = vpc-0a6c2f962f0d928d0
+AuditLogLogDBStack.ExportsOutputRefMainVpcPrivateSubnet1SubnetA8D0757B15568C8D = subnet-0551ca6170f32278f
+AuditLogLogDBStack.ExportsOutputRefMainVpcPrivateSubnet2SubnetFC4F66C434910780 = subnet-061660f3a10602da8
+AuditLogLogDBStack.ExportsOutputRefMainVpcPublicSubnet1Subnet269349B144A4FA94 = subnet-04c3eb3d2a8d9e8a3
+AuditLogLogDBStack.ExportsOutputRefMainVpcPublicSubnet2Subnet287D062B1BDD0C32 = subnet-0328a7485bd72879e
+Stack ARN:
+arn:aws:cloudformation:ap-northeast-1:598540919918:stack/AuditLogLogDBStack/9b6b1be0-5691-11f0-9d2d-0e17bc43fb77
+
+✨  Total time: 29.96s
+
+AuditLogLogStack-v6: start: Publishing AuditLogLogStack-v6 Template (598540919918-ap-northeast-1)
+AuditLogLogStack-v6: success: Published AuditLogLogStack-v6 Template (598540919918-ap-northeast-1)
+AuditLogLogStack-v6
+Stack AuditLogLogStack-v6
+IAM Statement Changes
+┌───┬───────────────────────────────────────────────────────────────────────────────────────────────────────────────┬────────┬─────────────────────────────────┬────────────────────────────────────────────┬───────────┐
+│   │ Resource                                                                                                      │ Effect │ Action                          │ Principal                                  │ Condition │
+├───┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────────────────────┼────────────────────────────────────────────┼───────────┤
+│ + │ ${ExportConsumerTask/ExecutionRole.Arn}                                                                       │ Allow  │ sts:AssumeRole                  │ Service:ecs-tasks.amazonaws.com            │           │
+├───┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────────────────────┼────────────────────────────────────────────┼───────────┤
+│ + │ ${ExportConsumerTask/ExportConsumerContainer/LogGroup.Arn}                                                    │ Allow  │ logs:CreateLogStream            │ AWS:${ExportConsumerTask/ExecutionRole}    │           │
+│   │                                                                                                               │        │ logs:PutLogEvents               │                                            │           │
+├───┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────────────────────┼────────────────────────────────────────────┼───────────┤
+│ + │ ${ExportConsumerTask/TaskRole.Arn}                                                                            │ Allow  │ sts:AssumeRole                  │ Service:ecs-tasks.amazonaws.com            │           │
+├───┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────────────────────┼────────────────────────────────────────────┼───────────┤
+│ + │ ${LogConsumerTask/ExecutionRole.Arn}                                                                          │ Allow  │ sts:AssumeRole                  │ Service:ecs-tasks.amazonaws.com            │           │
+├───┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────────────────────┼────────────────────────────────────────────┼───────────┤
+│ + │ ${LogConsumerTask/LogConsumerContainer/LogGroup.Arn}                                                          │ Allow  │ logs:CreateLogStream            │ AWS:${LogConsumerTask/ExecutionRole}       │           │
+│   │                                                                                                               │        │ logs:PutLogEvents               │                                            │           │
+├───┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────────────────────┼────────────────────────────────────────────┼───────────┤
+│ + │ ${LogConsumerTask/TaskRole.Arn}                                                                               │ Allow  │ sts:AssumeRole                  │ Service:ecs-tasks.amazonaws.com            │           │
+├───┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────────────────────┼────────────────────────────────────────────┼───────────┤
+│ + │ ${LogService-v6/TaskDef/ExecutionRole.Arn}                                                                    │ Allow  │ sts:AssumeRole                  │ Service:ecs-tasks.amazonaws.com            │           │
+├───┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────────────────────┼────────────────────────────────────────────┼───────────┤
+│ + │ ${LogService-v6/TaskDef/TaskRole.Arn}                                                                         │ Allow  │ sts:AssumeRole                  │ Service:ecs-tasks.amazonaws.com            │           │
+├───┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────────────────────┼────────────────────────────────────────────┼───────────┤
+│ + │ ${LogService-v6/TaskDef/web/LogGroup.Arn}                                                                     │ Allow  │ logs:CreateLogStream            │ AWS:${LogService-v6/TaskDef/ExecutionRole} │           │
+│   │                                                                                                               │        │ logs:PutLogEvents               │                                            │           │
+├───┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────────────────────┼────────────────────────────────────────────┼───────────┤
+│ + │ *                                                                                                             │ Allow  │ ecr:GetAuthorizationToken       │ AWS:${LogService-v6/TaskDef/ExecutionRole} │           │
+│ + │ *                                                                                                             │ Allow  │ ecr:GetAuthorizationToken       │ AWS:${LogConsumerTask/ExecutionRole}       │           │
+│ + │ *                                                                                                             │ Allow  │ ecr:GetAuthorizationToken       │ AWS:${ExportConsumerTask/ExecutionRole}    │           │
+├───┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────────────────────┼────────────────────────────────────────────┼───────────┤
+│ + │ arn:aws:ecr:ap-northeast-1:598540919918:repository/cdk-hnb659fds-container-assets-598540919918-ap-northeast-1 │ Allow  │ ecr:BatchCheckLayerAvailability │ AWS:${LogService-v6/TaskDef/ExecutionRole} │           │
+│   │                                                                                                               │        │ ecr:BatchGetImage               │                                            │           │
+│   │                                                                                                               │        │ ecr:GetDownloadUrlForLayer      │                                            │           │
+│ + │ arn:aws:ecr:ap-northeast-1:598540919918:repository/cdk-hnb659fds-container-assets-598540919918-ap-northeast-1 │ Allow  │ ecr:BatchCheckLayerAvailability │ AWS:${LogConsumerTask/ExecutionRole}       │           │
+│   │                                                                                                               │        │ ecr:BatchGetImage               │                                            │           │
+│   │                                                                                                               │        │ ecr:GetDownloadUrlForLayer      │                                            │           │
+│ + │ arn:aws:ecr:ap-northeast-1:598540919918:repository/cdk-hnb659fds-container-assets-598540919918-ap-northeast-1 │ Allow  │ ecr:BatchCheckLayerAvailability │ AWS:${ExportConsumerTask/ExecutionRole}    │           │
+│   │                                                                                                               │        │ ecr:BatchGetImage               │                                            │           │
+│   │                                                                                                               │        │ ecr:GetDownloadUrlForLayer      │                                            │           │
+└───┴───────────────────────────────────────────────────────────────────────────────────────────────────────────────┴────────┴─────────────────────────────────┴────────────────────────────────────────────┴───────────┘
+Security Group Changes
+┌───┬────────────────────────────────────────────────┬─────┬────────────┬────────────────────────────────────────────────┐
+│   │ Group                                          │ Dir │ Protocol   │ Peer                                           │
+├───┼────────────────────────────────────────────────┼─────┼────────────┼────────────────────────────────────────────────┤
+│ + │ ${LogService-v6/LB/SecurityGroup.GroupId}      │ In  │ TCP 80     │ Everyone (IPv4)                                │
+│ + │ ${LogService-v6/LB/SecurityGroup.GroupId}      │ Out │ TCP 8000   │ ${LogService-v6/Service/SecurityGroup.GroupId} │
+├───┼────────────────────────────────────────────────┼─────┼────────────┼────────────────────────────────────────────────┤
+│ + │ ${LogService-v6/Service/SecurityGroup.GroupId} │ In  │ TCP 8000   │ ${LogService-v6/LB/SecurityGroup.GroupId}      │
+│ + │ ${LogService-v6/Service/SecurityGroup.GroupId} │ Out │ Everything │ Everyone (IPv4)                                │
+└───┴────────────────────────────────────────────────┴─────┴────────────┴────────────────────────────────────────────────┘
+(NOTE: There may be security-related changes not in this list. See https://github.com/aws/aws-cdk/issues/1299)
+
+
+Do you wish to deploy these changes (y/n)? y
+AuditLogLogStack-v6: deploying... [2/2]
+AuditLogLogStack-v6: creating CloudFormation changeset...
+
+ ✅  AuditLogLogStack-v6
+
+✨  Deployment time: 301.36s
+
+Outputs:
+AuditLogLogStack-v6.LogServicev6LoadBalancerDNS5F1305DC = LogService-v6-alb-1413408237.ap-northeast-1.elb.amazonaws.com
+AuditLogLogStack-v6.LogServicev6ServiceURL3D43D34B = http://LogService-v6-alb-1413408237.ap-northeast-1.elb.amazonaws.com
+Stack ARN:
+arn:aws:cloudformation:ap-northeast-1:598540919918:stack/AuditLogLogStack-v6/880aa9f0-57b6-11f0-8647-0ecadcac3d45
+
+✨  Total time: 322.15s
 ```
